@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Country Model
+model Country {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  countryFlag String
+  countryCode String
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Device Model
+model Device {
+  id                     String   @id @default(uuid())
+  type                   String
+  manufacturer           String
+  model                  String
+  operatingSystem        String?
+  operatingSystemVersion String?
+  isDeleted              Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  // Enforce uniqueness across these fields, replacing the manual validateDuplicate helper
+  @@unique([type, manufacturer, model, operatingSystem, operatingSystemVersion], name: "device_unique_constraint")
+}
+
+// EducationalInstitution Model
+model EducationalInstitution {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
