@@ -43,12 +43,18 @@ export class CountriesService {
 
   async update(id: string, createCountryDto: CreateCountryDto) {
     await this.findOne(id);
-    return this.prisma.country.update({ where: { id }, data: createCountryDto });
+    return this.prisma.country.update({
+      where: { id },
+      data: createCountryDto,
+    });
   }
 
   async partiallyUpdate(id: string, updateCountryDto: UpdateCountryDto) {
     await this.findOne(id);
-    return this.prisma.country.update({ where: { id }, data: updateCountryDto });
+    return this.prisma.country.update({
+      where: { id },
+      data: updateCountryDto,
+    });
   }
 
   async remove(id: string, destroy: boolean = false) {

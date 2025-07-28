@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+
 import { PrismaService } from './prisma.service';
 
 @Module({
@@ -6,4 +7,3 @@ import { PrismaService } from './prisma.service';
   exports: [PrismaService], // Export the service to be used in other modules
 })
 export class PrismaModule {}
-

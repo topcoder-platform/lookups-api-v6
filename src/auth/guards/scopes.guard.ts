@@ -7,10 +7,10 @@ export class ScopesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredScopes = this.reflector.getAllAndOverride<string[]>(SCOPES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredScopes = this.reflector.getAllAndOverride<string[]>(
+      SCOPES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
     if (!requiredScopes) {
       return true; // No scopes are required, access is granted.
     }

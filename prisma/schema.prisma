@@ -15,7 +15,7 @@ model Country {
   id          String   @id @default(uuid())
   name        String   @unique
   countryFlag String
-  countryCode String
+  countryCode String   @unique
   isDeleted   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

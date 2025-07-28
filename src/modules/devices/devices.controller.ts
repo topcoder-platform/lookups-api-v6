@@ -22,10 +22,17 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiBearerAuth,
+  ApiResponse,
+} from '@nestjs/swagger';
+
 import { DevicesService } from './devices.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
-import { ApiTags, ApiOperation, ApiQuery, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { PermissionsGuard } from '../../auth/guards/permissions.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { Scopes } from '../../auth/decorators/scopes.decorator';
@@ -34,7 +41,7 @@ import { setPaginationHeaders } from '../../common/pagination.helper';
 import { Prisma } from '@prisma/client';
 
 @ApiTags('Devices')
-@Controller('lookups/devices')
+@Controller('devices')
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
 
@@ -44,23 +51,65 @@ export class DevicesController {
   @Scopes(AppScopes.CreateLookup, AppScopes.AllLookup)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new device' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: 'Device created successfully' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Device created successfully',
+  })
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createDeviceDto: CreateDeviceDto) {
-    return this.devicesService.create(createDeviceDto);
+    return await this.devicesService.create(createDeviceDto);
   }
 
   @Get()
   @ApiOperation({ summary: 'List devices with filtering and pagination' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Items per page (default: 20)' })
-  @ApiQuery({ name: 'type', required: false, type: String, description: 'Filter by device type' })
-  @ApiQuery({ name: 'manufacturer', required: false, type: String, description: 'Filter by manufacturer' })
-  @ApiQuery({ name: 'model', required: false, type: String, description: 'Filter by model' })
-  @ApiQuery({ name: 'operatingSystem', required: false, type: String, description: 'Filter by operating system' })
-  @ApiQuery({ name: 'operatingSystemVersion', required: false, type: String, description: 'Filter by operating system version' })
-  @ApiQuery({ name: 'includeSoftDeleted', required: false, type: Boolean, description: 'Include soft-deleted records (admin only)' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 20)',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    type: String,
+    description: 'Filter by device type',
+  })
+  @ApiQuery({
+    name: 'manufacturer',
+    required: false,
+    type: String,
+    description: 'Filter by manufacturer',
+  })
+  @ApiQuery({
+    name: 'model',
+    required: false,
+    type: String,
+    description: 'Filter by model',
+  })
+  @ApiQuery({
+    name: 'operatingSystem',
+    required: false,
+    type: String,
+    description: 'Filter by operating system',
+  })
+  @ApiQuery({
+    name: 'operatingSystemVersion',
+    required: false,
+    type: String,
+    description: 'Filter by operating system version',
+  })
+  @ApiQuery({
+    name: 'includeSoftDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include soft-deleted records (admin only)',
+  })
   async findAll(
     @Req() req: any,
     @Res() res: Response,
@@ -71,16 +120,23 @@ export class DevicesController {
     @Query('model') model?: string,
     @Query('operatingSystem') operatingSystem?: string,
     @Query('operatingSystemVersion') operatingSystemVersion?: string,
-    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe) includeSoftDeleted?: boolean,
+    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe)
+    includeSoftDeleted?: boolean,
   ) {
-    const isAdmin = req.authUser?.roles?.includes(UserRoles.Admin) || req.authUser?.scopes?.includes(AppScopes.AllLookup);
+    const isAdmin =
+      req.authUser?.roles?.includes(UserRoles.Admin) ||
+      req.authUser?.scopes?.includes(AppScopes.AllLookup);
 
     if (includeSoftDeleted && !isAdmin) {
-      throw new ForbiddenException('You are not allowed to perform this action.');
+      throw new ForbiddenException(
+        'You are not allowed to perform this action.',
+      );
     }
 
     if (page * perPage >= 10000) {
-      throw new BadRequestException('You cannot fetch more than 10,000 records at a time');
+      throw new BadRequestException(
+        'You cannot fetch more than 10,000 records at a time',
+      );
     }
 
     const where: Prisma.DeviceWhereInput = {
@@ -94,14 +150,12 @@ export class DevicesController {
       where.isDeleted = false;
     }
 
-    const { total, data } = await this.devicesService.findAll(
-      {
-        skip: (page - 1) * perPage,
-        take: perPage,
-        where,
-        orderBy: { type: 'asc' },
-      },
-    );
+    const { total, data } = await this.devicesService.findAll({
+      skip: (page - 1) * perPage,
+      take: perPage,
+      where,
+      orderBy: { type: 'asc' },
+    });
 
     setPaginationHeaders(res, req, total, page, perPage);
     return res.send(data);
@@ -109,15 +163,54 @@ export class DevicesController {
 
   @Head()
   @ApiOperation({ summary: 'Get headers for devices list' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Items per page (default: 20)' })
-  @ApiQuery({ name: 'type', required: false, type: String, description: 'Filter by device type' })
-  @ApiQuery({ name: 'manufacturer', required: false, type: String, description: 'Filter by manufacturer' })
-  @ApiQuery({ name: 'model', required: false, type: String, description: 'Filter by model' })
-  @ApiQuery({ name: 'operatingSystem', required: false, type: String, description: 'Filter by operating system' })
-  @ApiQuery({ name: 'operatingSystemVersion', required: false, type: String, description: 'Filter by operating system version' })
-  @ApiQuery({ name: 'includeSoftDeleted', required: false, type: Boolean, description: 'Include soft-deleted records (admin only)' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 20)',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    type: String,
+    description: 'Filter by device type',
+  })
+  @ApiQuery({
+    name: 'manufacturer',
+    required: false,
+    type: String,
+    description: 'Filter by manufacturer',
+  })
+  @ApiQuery({
+    name: 'model',
+    required: false,
+    type: String,
+    description: 'Filter by model',
+  })
+  @ApiQuery({
+    name: 'operatingSystem',
+    required: false,
+    type: String,
+    description: 'Filter by operating system',
+  })
+  @ApiQuery({
+    name: 'operatingSystemVersion',
+    required: false,
+    type: String,
+    description: 'Filter by operating system version',
+  })
+  @ApiQuery({
+    name: 'includeSoftDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include soft-deleted records (admin only)',
+  })
   @HttpCode(HttpStatus.OK)
   async findAllHead(
     @Req() req: any,
@@ -129,12 +222,17 @@ export class DevicesController {
     @Query('model') model?: string,
     @Query('operatingSystem') operatingSystem?: string,
     @Query('operatingSystemVersion') operatingSystemVersion?: string,
-    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe) includeSoftDeleted?: boolean,
+    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe)
+    includeSoftDeleted?: boolean,
   ) {
-    const isAdmin = req.authUser?.roles?.includes(UserRoles.Admin) || req.authUser?.scopes?.includes(AppScopes.AllLookup);
+    const isAdmin =
+      req.authUser?.roles?.includes(UserRoles.Admin) ||
+      req.authUser?.scopes?.includes(AppScopes.AllLookup);
 
     if (includeSoftDeleted && !isAdmin) {
-      throw new ForbiddenException('You are not allowed to perform this action.');
+      throw new ForbiddenException(
+        'You are not allowed to perform this action.',
+      );
     }
 
     const where: Prisma.DeviceWhereInput = {
@@ -148,11 +246,9 @@ export class DevicesController {
       where.isDeleted = false;
     }
 
-    const { total } = await this.devicesService.findAll(
-      {
-        where,
-      }
-    );
+    const { total } = await this.devicesService.findAll({
+      where,
+    });
 
     setPaginationHeaders(res, req, total, page, perPage);
     res.end();
@@ -160,24 +256,36 @@ export class DevicesController {
 
   @Get('types')
   @ApiOperation({ summary: 'Get distinct device types' })
-  @ApiBearerAuth()
   async getTypes() {
     return this.devicesService.getTypes();
   }
 
   @Get('manufacturers')
   @ApiOperation({ summary: 'Get distinct device manufacturers' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'type', required: false, type: String, description: 'Filter by device type' })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    type: String,
+    description: 'Filter by device type',
+  })
   async getManufacturers(@Query('type') type?: string) {
     return this.devicesService.getManufacturers(type);
   }
 
   @Get('models')
   @ApiOperation({ summary: 'Get distinct device models' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'type', required: false, type: String, description: 'Filter by device type' })
-  @ApiQuery({ name: 'manufacturer', required: false, type: String, description: 'Filter by manufacturer' })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    type: String,
+    description: 'Filter by device type',
+  })
+  @ApiQuery({
+    name: 'manufacturer',
+    required: false,
+    type: String,
+    description: 'Filter by manufacturer',
+  })
   async getDeviceModels(
     @Query('type') type?: string,
     @Query('manufacturer') manufacturer?: string,
@@ -187,17 +295,26 @@ export class DevicesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a device by ID' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'includeSoftDeleted', required: false, type: Boolean, description: 'Include soft-deleted record (admin only)' })
+  @ApiQuery({
+    name: 'includeSoftDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include soft-deleted record (admin only)',
+  })
   async findOne(
     @Req() req: any,
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe) includeSoftDeleted: boolean,
+    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe)
+    includeSoftDeleted: boolean,
   ) {
-    const isAdmin = req.authUser?.roles?.includes(UserRoles.Admin) || req.authUser?.scopes?.includes(AppScopes.AllLookup);
+    const isAdmin =
+      req.authUser?.roles?.includes(UserRoles.Admin) ||
+      req.authUser?.scopes?.includes(AppScopes.AllLookup);
 
     if (includeSoftDeleted && !isAdmin) {
-      throw new ForbiddenException('You are not allowed to perform this action.');
+      throw new ForbiddenException(
+        'You are not allowed to perform this action.',
+      );
     }
 
     return this.devicesService.findOne(id, includeSoftDeleted && isAdmin);
@@ -205,18 +322,27 @@ export class DevicesController {
 
   @Head(':id')
   @ApiOperation({ summary: 'Get headers for a device by ID' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'includeSoftDeleted', required: false, type: Boolean, description: 'Include soft-deleted record (admin only)' })
+  @ApiQuery({
+    name: 'includeSoftDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include soft-deleted record (admin only)',
+  })
   @HttpCode(HttpStatus.OK)
   async findOneHead(
     @Req() req: any,
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe) includeSoftDeleted: boolean,
+    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe)
+    includeSoftDeleted: boolean,
   ) {
-    const isAdmin = req.authUser?.roles?.includes(UserRoles.Admin) || req.authUser?.scopes?.includes(AppScopes.AllLookup);
+    const isAdmin =
+      req.authUser?.roles?.includes(UserRoles.Admin) ||
+      req.authUser?.scopes?.includes(AppScopes.AllLookup);
 
     if (includeSoftDeleted && !isAdmin) {
-      throw new ForbiddenException('You are not allowed to perform this action.');
+      throw new ForbiddenException(
+        'You are not allowed to perform this action.',
+      );
     }
 
     await this.devicesService.findOne(id, includeSoftDeleted && isAdmin);
@@ -255,11 +381,17 @@ export class DevicesController {
   @Scopes(AppScopes.DeleteLookup, AppScopes.AllLookup)
   @ApiOperation({ summary: 'Remove a device (soft or hard delete)' })
   @ApiBearerAuth()
-  @ApiQuery({ name: 'destroy', required: false, type: Boolean, description: 'Perform hard delete if true' })
+  @ApiQuery({
+    name: 'destroy',
+    required: false,
+    type: Boolean,
+    description: 'Perform hard delete if true',
+  })
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('destroy', new DefaultValuePipe(false), ParseBoolPipe) destroy: boolean,
+    @Query('destroy', new DefaultValuePipe(false), ParseBoolPipe)
+    destroy: boolean,
   ) {
     await this.devicesService.remove(id, destroy);
   }

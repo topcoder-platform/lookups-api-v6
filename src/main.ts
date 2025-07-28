@@ -17,16 +17,20 @@ async function bootstrap() {
   // Apply the Prisma exception filter globally
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
+  app.setGlobalPrefix('v6/lookups');
 
   // Get PrismaService instance to handle graceful shutdown
   const prismaService = app.get(PrismaService);
-  await prismaService.enableShutdownHooks(app);
+  prismaService.enableShutdownHooks(app);
 
   // Configure Swagger
   const config = new DocumentBuilder()
     .setTitle('TopCoder Lookup API')
-    .setDescription('The API for managing lookup data like countries, devices, and educational institutions.')
-    .setVersion('5.0')
+    .setDescription(
+      'The API for managing lookup data like countries, devices, and educational institutions.',
+    )
+    .setVersion('6.0')
+    .setBasePath('v6/lookups')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
@@ -37,4 +41,4 @@ async function bootstrap() {
   console.log(`Application is running on: ${await app.getUrl()}`);
   console.log(`Swagger docs available at: ${await app.getUrl()}/api-docs`);
 }
-bootstrap();
+bootstrap().catch(console.error);

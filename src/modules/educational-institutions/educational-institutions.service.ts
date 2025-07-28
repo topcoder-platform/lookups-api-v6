@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { CreateEducationalInstitutionDto } from './dto/create-educational-institution.dto';
 import { UpdateEducationalInstitutionDto } from './dto/update-educational-institution.dto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class EducationalInstitutionsService {
@@ -21,7 +21,12 @@ export class EducationalInstitutionsService {
     const { skip, take, where, orderBy } = params;
     const [total, data] = await this.prisma.$transaction([
       this.prisma.educationalInstitution.count({ where }),
-      this.prisma.educationalInstitution.findMany({ skip, take, where, orderBy }),
+      this.prisma.educationalInstitution.findMany({
+        skip,
+        take,
+        where,
+        orderBy,
+      }),
     ]);
     return { total, data };
   }
@@ -35,19 +40,30 @@ export class EducationalInstitutionsService {
       where,
     });
     if (!institution) {
-      throw new NotFoundException(`Educational Institution with ID "${id}" not found`);
+      throw new NotFoundException(
+        `Educational Institution with ID "${id}" not found`,
+      );
     }
     return institution;
   }
 
   async update(id: string, createDto: CreateEducationalInstitutionDto) {
     await this.findOne(id);
-    return this.prisma.educationalInstitution.update({ where: { id }, data: createDto });
+    return this.prisma.educationalInstitution.update({
+      where: { id },
+      data: createDto,
+    });
   }
 
-  async partiallyUpdate(id: string, updateDto: UpdateEducationalInstitutionDto) {
+  async partiallyUpdate(
+    id: string,
+    updateDto: UpdateEducationalInstitutionDto,
+  ) {
     await this.findOne(id);
-    return this.prisma.educationalInstitution.update({ where: { id }, data: updateDto });
+    return this.prisma.educationalInstitution.update({
+      where: { id },
+      data: updateDto,
+    });
   }
 
   async remove(id: string, destroy: boolean = false) {

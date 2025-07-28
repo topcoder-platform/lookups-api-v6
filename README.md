@@ -24,7 +24,7 @@ The new architecture eliminates the complexity of the dual-datastore system, sim
 
 ```bash
 git clone <repository-url>
-cd lookups-api-nestjs
+cd lookups-api-v6
 ```
 
 ### 2. Install Dependencies
@@ -153,7 +153,7 @@ The migration from the legacy stack to the new NestJS/Prisma/PostgreSQL stack wa
 
 - `src/`: Contains the application source code.
     - `auth/`: Authentication and authorization logic (Guards, Strategies, Decorators).
-    - `common/`: Shared utilities, such as the Prisma exception filter.
+    - `common/`: Shared utilities, such as the Prisma exception filter, response middleware.
     - `modules/`: Contains the business logic for each resource (countries, devices, etc.).
     - `prisma/`: Prisma service for database interaction.
 - `prisma/`: Contains the Prisma schema, migrations, and seed script.
