@@ -90,7 +90,10 @@ export class DevicesService {
     return distinctManufacturers.map((d) => d.manufacturer);
   }
 
-  async getDeviceModels(type?: string, manufacturer?: string): Promise<string[]> {
+  async getDeviceModels(
+    type?: string,
+    manufacturer?: string,
+  ): Promise<string[]> {
     const whereClause: Prisma.DeviceWhereInput = { isDeleted: false };
     if (type) {
       whereClause.type = type;

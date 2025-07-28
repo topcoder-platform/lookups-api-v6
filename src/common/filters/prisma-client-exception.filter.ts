@@ -8,7 +8,6 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
   catch(exception: Prisma.PrismaClientKnownRequestError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const message = exception.message.replace(/\n/g, '');
 
     switch (exception.code) {
       // P2002: Unique constraint failed
@@ -26,7 +25,8 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
         const status = HttpStatus.NOT_FOUND;
         response.status(status).json({
           statusCode: status,
-          message: 'Record not found. The requested resource could not be found to perform the operation.',
+          message:
+            'Record not found. The requested resource could not be found to perform the operation.',
         });
         break;
       }

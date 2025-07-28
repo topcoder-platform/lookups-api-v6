@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { EducationalInstitutionsController } from './educational-institutions.controller';
 
 describe('EducationalInstitutionsController', () => {
@@ -9,7 +10,9 @@ describe('EducationalInstitutionsController', () => {
       controllers: [EducationalInstitutionsController],
     }).compile();
 
-    controller = module.get<EducationalInstitutionsController>(EducationalInstitutionsController);
+    controller = module.get<EducationalInstitutionsController>(
+      EducationalInstitutionsController,
+    );
   });
 
   it('should be defined', () => {

@@ -22,10 +22,17 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiBearerAuth,
+  ApiResponse,
+} from '@nestjs/swagger';
+
 import { CountriesService } from './countries.service';
 import { CreateCountryDto } from './dto/create-country.dto';
 import { UpdateCountryDto } from './dto/update-country.dto';
-import { ApiTags, ApiOperation, ApiQuery, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { PermissionsGuard } from '../../auth/guards/permissions.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { Scopes } from '../../auth/decorators/scopes.decorator';
@@ -34,7 +41,7 @@ import { setPaginationHeaders } from '../../common/pagination.helper';
 import { Prisma } from '@prisma/client';
 
 @ApiTags('Countries')
-@Controller('lookups/countries')
+@Controller('countries')
 export class CountriesController {
   constructor(private readonly countriesService: CountriesService) {}
 
@@ -44,7 +51,10 @@ export class CountriesController {
   @Scopes(AppScopes.CreateLookup, AppScopes.AllLookup)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new country' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: 'Country created successfully' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Country created successfully',
+  })
   @HttpCode(HttpStatus.CREATED)
   create(@Body() createCountryDto: CreateCountryDto) {
     return this.countriesService.create(createCountryDto);
@@ -52,12 +62,36 @@ export class CountriesController {
 
   @Get()
   @ApiOperation({ summary: 'List countries with filtering and pagination' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Items per page (default: 20)' })
-  @ApiQuery({ name: 'name', required: false, type: String, description: 'Filter by country name' })
-  @ApiQuery({ name: 'countryCode', required: false, type: String, description: 'Filter by country code' })
-  @ApiQuery({ name: 'includeSoftDeleted', required: false, type: Boolean, description: 'Include soft-deleted records (admin only)' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 20)',
+  })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    type: String,
+    description: 'Filter by country name',
+  })
+  @ApiQuery({
+    name: 'countryCode',
+    required: false,
+    type: String,
+    description: 'Filter by country code',
+  })
+  @ApiQuery({
+    name: 'includeSoftDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include soft-deleted records (admin only)',
+  })
   async findAll(
     @Req() req: any,
     @Res() res: Response,
@@ -65,16 +99,23 @@ export class CountriesController {
     @Query('perPage', new DefaultValuePipe(20), ParseIntPipe) perPage: number,
     @Query('name') name?: string,
     @Query('countryCode') countryCode?: string,
-    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe) includeSoftDeleted?: boolean,
+    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe)
+    includeSoftDeleted?: boolean,
   ) {
-    const isAdmin = req.authUser?.roles?.includes(UserRoles.Admin) || req.authUser?.scopes?.includes(AppScopes.AllLookup);
+    const isAdmin =
+      req.authUser?.roles?.includes(UserRoles.Admin) ||
+      req.authUser?.scopes?.includes(AppScopes.AllLookup);
 
     if (includeSoftDeleted && !isAdmin) {
-      throw new ForbiddenException('You are not allowed to perform this action.');
+      throw new ForbiddenException(
+        'You are not allowed to perform this action.',
+      );
     }
 
     if (page * perPage >= 10000) {
-      throw new BadRequestException('You cannot fetch more than 10,000 records at a time');
+      throw new BadRequestException(
+        'You cannot fetch more than 10,000 records at a time',
+      );
     }
 
     const where: Prisma.CountryWhereInput = { name, countryCode };
@@ -94,12 +135,36 @@ export class CountriesController {
 
   @Head()
   @ApiOperation({ summary: 'Get headers for countries list' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Items per page (default: 20)' })
-  @ApiQuery({ name: 'name', required: false, type: String, description: 'Filter by country name' })
-  @ApiQuery({ name: 'countryCode', required: false, type: String, description: 'Filter by country code' })
-  @ApiQuery({ name: 'includeSoftDeleted', required: false, type: Boolean, description: 'Include soft-deleted records (admin only)' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 20)',
+  })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    type: String,
+    description: 'Filter by country name',
+  })
+  @ApiQuery({
+    name: 'countryCode',
+    required: false,
+    type: String,
+    description: 'Filter by country code',
+  })
+  @ApiQuery({
+    name: 'includeSoftDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include soft-deleted records (admin only)',
+  })
   @HttpCode(HttpStatus.OK)
   async findAllHead(
     @Req() req: any,
@@ -108,12 +173,17 @@ export class CountriesController {
     @Query('perPage', new DefaultValuePipe(20), ParseIntPipe) perPage: number,
     @Query('name') name?: string,
     @Query('countryCode') countryCode?: string,
-    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe) includeSoftDeleted?: boolean,
+    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe)
+    includeSoftDeleted?: boolean,
   ) {
-    const isAdmin = req.authUser?.roles?.includes(UserRoles.Admin) || req.authUser?.scopes?.includes(AppScopes.AllLookup);
+    const isAdmin =
+      req.authUser?.roles?.includes(UserRoles.Admin) ||
+      req.authUser?.scopes?.includes(AppScopes.AllLookup);
 
     if (includeSoftDeleted && !isAdmin) {
-      throw new ForbiddenException('You are not allowed to perform this action.');
+      throw new ForbiddenException(
+        'You are not allowed to perform this action.',
+      );
     }
 
     const where: Prisma.CountryWhereInput = { name, countryCode };
@@ -129,34 +199,52 @@ export class CountriesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a country by ID' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'includeSoftDeleted', required: false, type: Boolean, description: 'Include soft-deleted record (admin only)' })
+  @ApiQuery({
+    name: 'includeSoftDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include soft-deleted record (admin only)',
+  })
   async findOne(
     @Req() req: any,
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe) includeSoftDeleted: boolean,
+    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe)
+    includeSoftDeleted: boolean,
   ) {
-    const isAdmin = req.authUser?.roles?.includes(UserRoles.Admin) || req.authUser?.scopes?.includes(AppScopes.AllLookup);
+    const isAdmin =
+      req.authUser?.roles?.includes(UserRoles.Admin) ||
+      req.authUser?.scopes?.includes(AppScopes.AllLookup);
     if (includeSoftDeleted && !isAdmin) {
-      throw new ForbiddenException('You are not allowed to perform this action.');
+      throw new ForbiddenException(
+        'You are not allowed to perform this action.',
+      );
     }
     return this.countriesService.findOne(id, includeSoftDeleted && isAdmin);
   }
 
   @Head(':id')
   @ApiOperation({ summary: 'Get headers for a country by ID' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'includeSoftDeleted', required: false, type: Boolean, description: 'Include soft-deleted record (admin only)' })
+  @ApiQuery({
+    name: 'includeSoftDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include soft-deleted record (admin only)',
+  })
   @HttpCode(HttpStatus.OK)
   async findOneHead(
     @Req() req: any,
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe) includeSoftDeleted: boolean,
+    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe)
+    includeSoftDeleted: boolean,
   ) {
-    const isAdmin = req.authUser?.roles?.includes(UserRoles.Admin) || req.authUser?.scopes?.includes(AppScopes.AllLookup);
+    const isAdmin =
+      req.authUser?.roles?.includes(UserRoles.Admin) ||
+      req.authUser?.scopes?.includes(AppScopes.AllLookup);
 
     if (includeSoftDeleted && !isAdmin) {
-      throw new ForbiddenException('You are not allowed to perform this action.');
+      throw new ForbiddenException(
+        'You are not allowed to perform this action.',
+      );
     }
 
     await this.countriesService.findOne(id, includeSoftDeleted && isAdmin);
@@ -195,11 +283,17 @@ export class CountriesController {
   @Scopes(AppScopes.DeleteLookup, AppScopes.AllLookup)
   @ApiOperation({ summary: 'Remove a country (soft or hard delete)' })
   @ApiBearerAuth()
-  @ApiQuery({ name: 'destroy', required: false, type: Boolean, description: 'Perform hard delete if true' })
+  @ApiQuery({
+    name: 'destroy',
+    required: false,
+    type: Boolean,
+    description: 'Perform hard delete if true',
+  })
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('destroy', new DefaultValuePipe(false), ParseBoolPipe) destroy: boolean,
+    @Query('destroy', new DefaultValuePipe(false), ParseBoolPipe)
+    destroy: boolean,
   ) {
     await this.countriesService.remove(id, destroy);
   }

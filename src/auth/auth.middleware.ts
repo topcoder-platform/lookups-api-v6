@@ -5,16 +5,18 @@ import {
 } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
 import { ConfigService } from '@nestjs/config';
-import * as _ from 'lodash';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const authenticator = require('tc-core-library-js').middleware.jwtAuthenticator;
+import { middleware } from 'tc-core-library-js';
+const { jwtAuthenticator: authenticator } = middleware;
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
   private jwtAuthenticator;
 
   constructor(private configService: ConfigService) {
-    const authSecret = this.configService.get<string>('AUTH_SECRET', 'mysecret');
+    const authSecret = this.configService.get<string>(
+      'AUTH_SECRET',
+      'mysecret',
+    );
     let issuersValue = this.configService.get<string>(
       'VALID_ISSUERS',
       '["https://api.topcoder.com","https://topcoder-dev.auth0.com/"]',

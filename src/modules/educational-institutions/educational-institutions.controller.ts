@@ -22,19 +22,26 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiBearerAuth,
+  ApiResponse,
+} from '@nestjs/swagger';
+import { Prisma } from '@prisma/client';
+
 import { EducationalInstitutionsService } from './educational-institutions.service';
 import { CreateEducationalInstitutionDto } from './dto/create-educational-institution.dto';
 import { UpdateEducationalInstitutionDto } from './dto/update-educational-institution.dto';
-import { ApiTags, ApiOperation, ApiQuery, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { PermissionsGuard } from '../../auth/guards/permissions.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { Scopes } from '../../auth/decorators/scopes.decorator';
 import { UserRoles, Scopes as AppScopes } from '../../app-constants';
 import { setPaginationHeaders } from '../../common/pagination.helper';
-import { Prisma } from '@prisma/client';
 
 @ApiTags('Educational Institutions')
-@Controller('lookups/educationalInstitutions')
+@Controller('educationalInstitutions')
 export class EducationalInstitutionsController {
   constructor(
     private readonly educationalInstitutionsService: EducationalInstitutionsService,
@@ -46,35 +53,66 @@ export class EducationalInstitutionsController {
   @Scopes(AppScopes.CreateLookup, AppScopes.AllLookup)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new educational institution' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: 'Educational institution created successfully' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Educational institution created successfully',
+  })
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createDto: CreateEducationalInstitutionDto) {
-    return this.educationalInstitutionsService.create(createDto);
+    return await this.educationalInstitutionsService.create(createDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'List educational institutions with filtering and pagination' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Items per page (default: 20)' })
-  @ApiQuery({ name: 'name', required: false, type: String, description: 'Filter by institution name' })
-  @ApiQuery({ name: 'includeSoftDeleted', required: false, type: Boolean, description: 'Include soft-deleted records (admin only)' })
+  @ApiOperation({
+    summary: 'List educational institutions with filtering and pagination',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 20)',
+  })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    type: String,
+    description: 'Filter by institution name',
+  })
+  @ApiQuery({
+    name: 'includeSoftDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include soft-deleted records (admin only)',
+  })
   async findAll(
     @Req() req: any,
     @Res() res: Response,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('perPage', new DefaultValuePipe(20), ParseIntPipe) perPage: number,
     @Query('name') name?: string,
-    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe) includeSoftDeleted?: boolean,
+    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe)
+    includeSoftDeleted?: boolean,
   ) {
-    const isAdmin = req.authUser?.roles?.includes(UserRoles.Admin) || req.authUser?.scopes?.includes(AppScopes.AllLookup);
+    const isAdmin =
+      req.authUser?.roles?.includes(UserRoles.Admin) ||
+      req.authUser?.scopes?.includes(AppScopes.AllLookup);
 
     if (includeSoftDeleted && !isAdmin) {
-      throw new ForbiddenException('You are not allowed to perform this action.');
+      throw new ForbiddenException(
+        'You are not allowed to perform this action.',
+      );
     }
 
     if (page * perPage >= 10000) {
-      throw new BadRequestException('You cannot fetch more than 10,000 records at a time');
+      throw new BadRequestException(
+        'You cannot fetch more than 10,000 records at a time',
+      );
     }
 
     const where: Prisma.EducationalInstitutionWhereInput = { name };
@@ -82,14 +120,12 @@ export class EducationalInstitutionsController {
       where.isDeleted = false;
     }
 
-    const { total, data } = await this.educationalInstitutionsService.findAll(
-      {
-        skip: (page - 1) * perPage,
-        take: perPage,
-        where,
-        orderBy: { name: 'asc' },
-      }
-    );
+    const { total, data } = await this.educationalInstitutionsService.findAll({
+      skip: (page - 1) * perPage,
+      take: perPage,
+      where,
+      orderBy: { name: 'asc' },
+    });
 
     setPaginationHeaders(res, req, total, page, perPage);
     return res.send(data);
@@ -97,11 +133,30 @@ export class EducationalInstitutionsController {
 
   @Head()
   @ApiOperation({ summary: 'Get headers for educational institutions list' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Items per page (default: 20)' })
-  @ApiQuery({ name: 'name', required: false, type: String, description: 'Filter by institution name' })
-  @ApiQuery({ name: 'includeSoftDeleted', required: false, type: Boolean, description: 'Include soft-deleted records (admin only)' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 20)',
+  })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    type: String,
+    description: 'Filter by institution name',
+  })
+  @ApiQuery({
+    name: 'includeSoftDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include soft-deleted records (admin only)',
+  })
   @HttpCode(HttpStatus.OK)
   async findAllHead(
     @Req() req: any,
@@ -109,12 +164,17 @@ export class EducationalInstitutionsController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('perPage', new DefaultValuePipe(20), ParseIntPipe) perPage: number,
     @Query('name') name?: string,
-    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe) includeSoftDeleted?: boolean,
+    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe)
+    includeSoftDeleted?: boolean,
   ) {
-    const isAdmin = req.authUser?.roles?.includes(UserRoles.Admin) || req.authUser?.scopes?.includes(AppScopes.AllLookup);
+    const isAdmin =
+      req.authUser?.roles?.includes(UserRoles.Admin) ||
+      req.authUser?.scopes?.includes(AppScopes.AllLookup);
 
     if (includeSoftDeleted && !isAdmin) {
-      throw new ForbiddenException('You are not allowed to perform this action.');
+      throw new ForbiddenException(
+        'You are not allowed to perform this action.',
+      );
     }
 
     const where: Prisma.EducationalInstitutionWhereInput = { name };
@@ -122,11 +182,9 @@ export class EducationalInstitutionsController {
       where.isDeleted = false;
     }
 
-    const { total } = await this.educationalInstitutionsService.findAll(
-      {
-        where,
-      }
-    );
+    const { total } = await this.educationalInstitutionsService.findAll({
+      where,
+    });
 
     setPaginationHeaders(res, req, total, page, perPage);
     res.end();
@@ -134,39 +192,63 @@ export class EducationalInstitutionsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get an educational institution by ID' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'includeSoftDeleted', required: false, type: Boolean, description: 'Include soft-deleted record (admin only)' })
+  @ApiQuery({
+    name: 'includeSoftDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include soft-deleted record (admin only)',
+  })
   async findOne(
     @Req() req: any,
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe) includeSoftDeleted: boolean,
+    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe)
+    includeSoftDeleted: boolean,
   ) {
-    const isAdmin = req.authUser?.roles?.includes(UserRoles.Admin) || req.authUser?.scopes?.includes(AppScopes.AllLookup);
+    const isAdmin =
+      req.authUser?.roles?.includes(UserRoles.Admin) ||
+      req.authUser?.scopes?.includes(AppScopes.AllLookup);
 
     if (includeSoftDeleted && !isAdmin) {
-      throw new ForbiddenException('You are not allowed to perform this action.');
+      throw new ForbiddenException(
+        'You are not allowed to perform this action.',
+      );
     }
 
-    return this.educationalInstitutionsService.findOne(id, includeSoftDeleted && isAdmin);
+    return this.educationalInstitutionsService.findOne(
+      id,
+      includeSoftDeleted && isAdmin,
+    );
   }
 
   @Head(':id')
   @ApiOperation({ summary: 'Get headers for an educational institution by ID' })
-  @ApiBearerAuth()
-  @ApiQuery({ name: 'includeSoftDeleted', required: false, type: Boolean, description: 'Include soft-deleted record (admin only)' })
+  @ApiQuery({
+    name: 'includeSoftDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include soft-deleted record (admin only)',
+  })
   @HttpCode(HttpStatus.OK)
   async findOneHead(
     @Req() req: any,
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe) includeSoftDeleted: boolean,
+    @Query('includeSoftDeleted', new DefaultValuePipe(false), ParseBoolPipe)
+    includeSoftDeleted: boolean,
   ) {
-    const isAdmin = req.authUser?.roles?.includes(UserRoles.Admin) || req.authUser?.scopes?.includes(AppScopes.AllLookup);
+    const isAdmin =
+      req.authUser?.roles?.includes(UserRoles.Admin) ||
+      req.authUser?.scopes?.includes(AppScopes.AllLookup);
 
     if (includeSoftDeleted && !isAdmin) {
-      throw new ForbiddenException('You are not allowed to perform this action.');
+      throw new ForbiddenException(
+        'You are not allowed to perform this action.',
+      );
     }
 
-    await this.educationalInstitutionsService.findOne(id, includeSoftDeleted && isAdmin);
+    await this.educationalInstitutionsService.findOne(
+      id,
+      includeSoftDeleted && isAdmin,
+    );
     return;
   }
 
@@ -200,13 +282,21 @@ export class EducationalInstitutionsController {
   @UseGuards(PermissionsGuard)
   @Roles(UserRoles.Admin)
   @Scopes(AppScopes.DeleteLookup, AppScopes.AllLookup)
-  @ApiOperation({ summary: 'Remove an educational institution (soft or hard delete)' })
+  @ApiOperation({
+    summary: 'Remove an educational institution (soft or hard delete)',
+  })
   @ApiBearerAuth()
-  @ApiQuery({ name: 'destroy', required: false, type: Boolean, description: 'Perform hard delete if true' })
+  @ApiQuery({
+    name: 'destroy',
+    required: false,
+    type: Boolean,
+    description: 'Perform hard delete if true',
+  })
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('destroy', new DefaultValuePipe(false), ParseBoolPipe) destroy: boolean,
+    @Query('destroy', new DefaultValuePipe(false), ParseBoolPipe)
+    destroy: boolean,
   ) {
     await this.educationalInstitutionsService.remove(id, destroy);
   }

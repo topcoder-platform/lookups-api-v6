@@ -35,5 +35,8 @@ export function setPaginationHeaders(
   res.set('X-Total-Pages', totalPages.toString());
   res.set('Link', links.join(', '));
   // Expose headers for browser access (CORS)
-  res.set('Access-Control-Expose-Headers', 'X-Page, X-Per-Page, X-Total, X-Total-Pages, Link');
+  res.set(
+    'Access-Control-Expose-Headers',
+    'X-Page, X-Per-Page, X-Total, X-Total-Pages, Link',
+  );
 }

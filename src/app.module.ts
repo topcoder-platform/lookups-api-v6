@@ -6,6 +6,7 @@ import { EducationalInstitutionsModule } from './modules/educational-institution
 import { ConfigModule } from '@nestjs/config';
 import { HealthModule } from './health/health.module';
 import { AuthMiddleware } from './auth/auth.middleware';
+import { ResponseMiddleware } from './common/response.middleware';
 
 @Module({
   imports: [
@@ -23,5 +24,6 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // Apply the AuthMiddleware to all routes in the application.
     consumer.apply(AuthMiddleware).forRoutes('*');
+    consumer.apply(ResponseMiddleware).forRoutes('*');
   }
 }
