@@ -17,7 +17,7 @@ RUN npm install -g pnpm
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY . .
 # Generate Prisma Client
-RUN pnpm prisma generate
+RUN npx prisma generate
 # Build the application
 RUN pnpm build
 
