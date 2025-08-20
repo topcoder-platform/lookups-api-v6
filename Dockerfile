@@ -1,39 +1,20 @@
-# ---- Base Stage ----
-FROM node:20-alpine AS base
-WORKDIR /usr/src/app
+# syntax=docker/dockerfile:1
 
-# ---- Dependencies Stage ----
-FROM base AS deps
-# Install pnpm
-RUN npm install -g pnpm
-# Copy dependency-defining files
-COPY package.json pnpm-lock.yaml ./
-# Install dependencies
-RUN pnpm install --frozen-lockfile --prod
+FROM node:22.13.1-alpine
 
-# ---- Build Stage ----
-FROM base AS build
-RUN npm install -g pnpm
-COPY --from=deps /usr/src/app/node_modules ./node_modules
+RUN apk add --no-cache bash
+RUN apk update
+
+ARG RESET_DB_ARG=false
+ENV RESET_DB=$RESET_DB_ARG
+ARG SEED_DATA_ARG=""
+ENV SEED_DATA=$SEED_DATA_ARG
+ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
+
+WORKDIR /app
 COPY . .
-# Generate Prisma Client
-RUN npx prisma generate
-# Build the application
-RUN pnpm build
-
-# ---- Production Stage ----
-FROM base AS production
-ENV NODE_ENV production
-# Copy built application from the build stage
-COPY --from=build /usr/src/app/dist ./dist
-# Copy production dependencies from the deps stage
-COPY --from=deps /usr/src/app/node_modules ./node_modules
-# Copy Prisma schema and generated client for runtime
-COPY --from=build /usr/src/app/prisma ./prisma
-COPY --from=build /usr/src/app/node_modules/@prisma ./node_modules/@prisma
-
-# Expose the application port
-EXPOSE 3000
-
-# The command to run the application
-CMD ["node", "dist/src/main.js"]
+RUN npm install pnpm -g
+RUN pnpm install
+RUN pnpm run build
+RUN chmod +x appStartUp.sh
+CMD ./appStartUp.sh
