@@ -30,7 +30,7 @@ COPY --from=build /usr/src/app/dist ./dist
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 # Copy Prisma schema and generated client for runtime
 COPY --from=build /usr/src/app/prisma ./prisma
-COPY --from=build /usr/src/app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /usr/src/app/node_modules/@prisma ./node_modules/@prisma
 
 # Expose the application port
 EXPOSE 3000
