@@ -161,3 +161,28 @@ The migration from the legacy stack to the new NestJS/Prisma/PostgreSQL stack wa
 - `test/`: Contains the E2E test files (`*.e2e-spec.ts`).
 - `Dockerfile`: For building a production-ready Docker image.
 - `docker-compose.yml`: For running the local PostgreSQL database.
+
+**Downstream Usage**
+
+- This service is consumed by Topcoder apps to power country and device lookups. Below is a quick map of where and how it’s called to help with debugging.
+
+**platform-ui**
+
+- Country list for profile forms, fetched from Lookups API with a large page size to retrieve all entries:
+  - `GET /v6/lookups/countries?page=1&perPage=9999`. See platform-ui/src/libs/core/lib/profile/profile-functions/profile-store/profile-endpoint.config.ts.
+- Device selectors in Account Settings > Tools use device lookups for dependent dropdowns:
+  - Device types: `GET /v6/lookups/devices/types`
+  - Manufacturers by type: `GET /v6/lookups/devices/manufacturers?type={type}`
+  - Models by type/manufacturer: `GET /v6/lookups/devices/models?type={type}&manufacturer={manufacturer}`
+  - Filtered device lists (and OS info) via query params: `GET /v6/lookups/devices?type={type}&manufacturer={manufacturer}&model={model}&page=1&perPage=100`
+  - See platform-ui/src/apps/accounts/src/settings/tabs/tools/devices/Devices.tsx and platform-ui/src/libs/core/lib/profile/data-providers/useMemberDevicesLookup.ts.
+- Legacy path rewrite: requests to `/v6/members/lookup[s]/countries` are rewritten to `/v6/lookups/countries` by the XHR interceptor. See platform-ui/src/libs/core/lib/xhr/xhr-functions/xhr.functions.ts.
+- Local dev proxy maps `/v6/lookups` to this service on port 3007. See platform-ui/src/config/environments/local.env.ts.
+
+**community-app**
+
+- Not use. Country and other metadata are sourced via other endpoints in this app.
+
+**work-manager**
+
+- Not used. Challenge and group management uses other APIs; device and country lookups are not currently integrated here.
