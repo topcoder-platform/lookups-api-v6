@@ -3,6 +3,15 @@ import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
+  constructor() {
+    super({
+      transactionOptions: {
+        timeout: process.env.LOOKUPS_SERVICE_PRISMA_TIMEOUT
+          ? parseInt(process.env.LOOKUPS_SERVICE_PRISMA_TIMEOUT)
+          : 10000,
+      },
+    });
+  }
   async onModuleInit() {
     // Connect to the database when the module is initialized.
     // The soft-delete logic is now handled in each respective service
