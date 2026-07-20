@@ -31,6 +31,10 @@ ENV SEED_DATA=$SEED_DATA_ARG
 ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
 
 WORKDIR /app
-COPY --from=build /app /app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/appStartUp.sh ./appStartUp.sh
 RUN chmod +x appStartUp.sh
 CMD ["./appStartUp.sh"]
