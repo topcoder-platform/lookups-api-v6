@@ -1,9 +1,28 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1.7
 
-FROM node:22.13.1-alpine
+ARG NODE_VERSION=26.5.0
+ARG PNPM_VERSION=11.15.1
 
-RUN apk add --no-cache bash
-RUN apk update
+FROM node:${NODE_VERSION}-alpine AS build
+
+RUN apk upgrade --no-cache \
+    && apk add --no-cache bash
+
+WORKDIR /app
+COPY . .
+RUN npm install --global pnpm@${PNPM_VERSION}
+RUN pnpm install --frozen-lockfile
+RUN pnpm exec prisma generate
+RUN pnpm run lint
+RUN pnpm run build
+RUN pnpm prune --prod
+
+FROM node:${NODE_VERSION}-alpine AS runtime
+
+RUN apk upgrade --no-cache \
+    && apk add --no-cache bash \
+    && rm -rf /usr/local/lib/node_modules/npm \
+    && rm -f /usr/local/bin/npm /usr/local/bin/npx
 
 ARG RESET_DB_ARG=false
 ENV RESET_DB=$RESET_DB_ARG
@@ -12,10 +31,6 @@ ENV SEED_DATA=$SEED_DATA_ARG
 ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
 
 WORKDIR /app
-COPY . .
-RUN npm install pnpm -g
-RUN pnpm install
-RUN npx prisma generate
-RUN pnpm run build
+COPY --from=build /app /app
 RUN chmod +x appStartUp.sh
-CMD ./appStartUp.sh
+CMD ["./appStartUp.sh"]
