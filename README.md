@@ -14,7 +14,7 @@ The new architecture eliminates the complexity of the dual-datastore system, sim
 
 ## Prerequisites
 
-- Node.js 26.5.0 (see `.nvmrc`)
+- Node.js 26.5.1 (see `.nvmrc`)
 - pnpm 11.15.1
 - Docker and Docker Compose
 
@@ -161,6 +161,11 @@ The migration from the legacy stack to the new NestJS/Prisma/PostgreSQL stack wa
 - `test/`: Contains the E2E test files (`*.e2e-spec.ts`).
 - `Dockerfile`: For building a production-ready Docker image.
 - `docker-compose.yml`: For running the local PostgreSQL database.
+
+The production image runs as the unprivileged `app` user (UID 10001) on
+Alpine 3.24. It installs the distribution-provided Node.js 26.5.1 runtime and
+does not include npm or pnpm; database migrations are invoked directly through
+the bundled Prisma CLI JavaScript entry point before the service starts.
 
 **Downstream Usage**
 
