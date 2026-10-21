@@ -191,3 +191,8 @@ the bundled Prisma CLI JavaScript entry point before the service starts.
 **work-manager**
 
 - Not used. Challenge and group management uses other APIs; device and country lookups are not currently integrated here.
+
+## Keycloak migration branch
+
+On `keycloak_m2M`, follow [Keycloak configuration and rollout](docs/keycloak-m2m.md).
+Legacy Auth0 M2M settings below do not configure token issuance on this branch.

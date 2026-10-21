@@ -1,3 +1,4 @@
+import { auth } from 'tc-core-library-js';
 import {
   Injectable,
   CanActivate,
@@ -9,10 +10,12 @@ import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { SCOPES_KEY } from '../decorators/scopes.decorator';
 
+/** Allows configured member roles or exact service scopes from the shared verified principal. */
 @Injectable()
 export class PermissionsGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
+  /** Evaluates context metadata; returns access or throws Unauthorized/ForbiddenException. */
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(
       ROLES_KEY,
@@ -33,18 +36,15 @@ export class PermissionsGuard implements CanActivate {
       throw new UnauthorizedException('You are not authenticated.');
     }
 
-    if (requiredRoles && authUser.roles?.length) {
+    if (authUser.kind === 'user' && requiredRoles && authUser.roles?.length) {
       const hasRole = requiredRoles.some((role) =>
         authUser.roles.includes(role),
       );
       if (hasRole) return true;
     }
 
-    if (requiredScopes && authUser.scopes?.length) {
-      const hasScope = requiredScopes.some((scope) =>
-        authUser.scopes.includes(scope),
-      );
-      if (hasScope) return true;
+    if (requiredScopes?.length && auth.hasScopes(authUser, requiredScopes, 'any')) {
+      return true;
     }
 
     throw new ForbiddenException(
