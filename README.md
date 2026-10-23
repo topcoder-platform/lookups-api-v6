@@ -195,4 +195,7 @@ the bundled Prisma CLI JavaScript entry point before the service starts.
 ## Keycloak migration branch
 
 On `keycloak_m2M`, follow [Keycloak configuration and rollout](docs/keycloak-m2m.md).
-Legacy Auth0 M2M settings below do not configure token issuance on this branch.
+`USE_KEYCLOAK=true` validates Keycloak machine tokens (`KEYCLOAK_ISSUER`,
+`KEYCLOAK_AUDIENCE`, `KEYCLOAK_TOKEN_URL`); unset or `false` validates Auth0 machine
+tokens through `LEGACY_M2M_ISSUERS`/`LEGACY_M2M_AUDIENCE`. This service never issues
+M2M tokens, so the `AUTH0_*` client settings above are not read in either mode.
