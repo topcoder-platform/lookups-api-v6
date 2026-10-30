@@ -34,7 +34,7 @@
     "prisma": "^6.11.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "tc-core-library-js": "github:topcoder-platform/tc-core-library-js#master",
+    "tc-core-library-js": "github:topcoder-platform/tc-core-library-js#v4.0.0-rc.1",
     "uuid": "^14.0.1"
   },
   "devDependencies": {
