@@ -34,6 +34,26 @@ builddeploy_steps: &builddeploy_steps
         ./master_deploy.sh -d ECS -e $DEPLOY_ENV -t latest -j /config/${APPNAME}/appvar,/config/common/global-appvar -i ${APPNAME} -p FARGATE
 
 jobs:
+  # Validate the production Docker image before merging a feature branch.
+  "build-check":
+    !!merge <<: *defaults
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build production Docker image
+          command: docker buildx build --no-cache=true --load -t lookups-api-v6:ci .
+      - run:
+          name: Verify runtime image
+          command: |
+            docker run --rm -i --entrypoint sh lookups-api-v6:ci -es <<'SH'
+              test "$(id -u)" = "10001"
+              test -x ./appStartUp.sh
+              test -f dist/src/main.js
+              node -e 'require("@prisma/client"); require("@nestjs/core")'
+              node node_modules/prisma/build/index.js --version
+            SH
+
   # Build & Deploy against development backend
   "build-dev":
     !!merge <<: *defaults
@@ -57,6 +77,13 @@ workflows:
   version: 2
   build:
     jobs:
+    - "build-check":
+        filters:
+          branches:
+            ignore:
+              - develop
+              - pm-2539
+              - master
     # Development builds are executed on "develop" branch only.
     - "build-dev":
         context: org-global

@@ -163,7 +163,7 @@ The migration from the legacy stack to the new NestJS/Prisma/PostgreSQL stack wa
 - `docker-compose.yml`: For running the local PostgreSQL database.
 
 The production image runs as the unprivileged `app` user (UID 10001) on
-Alpine 3.24. It installs the distribution-provided Node.js 26.5.1 runtime and
+Alpine 3.24. It installs the latest distribution-provided Node.js 26 runtime and
 does not include npm or pnpm; database migrations are invoked directly through
 the bundled Prisma CLI JavaScript entry point before the service starts.
 
@@ -225,3 +225,14 @@ Node major. The runtime keeps Alpine's dynamically linked Node and system
 libraries. Existing non-root users and application entrypoints are preserved.
 Build stages using a versioned official Node image retain their configured
 version, and pnpm build arguments are explicitly declared in the consuming stage.
+
+CircleCI's `build-check` job builds the production Docker image without cached
+layers on non-deployment branches, including PR branches. It also checks the
+runtime user, compiled application, dependency loading, and bundled Prisma CLI.
+This catches unavailable APK packages and image build failures before merging.
+The job does not require deployment credentials or start the application against
+a database. To reproduce the build locally, run:
+
+```bash
+docker buildx build --no-cache=true --load -t lookups-api-v6:ci .
+```
