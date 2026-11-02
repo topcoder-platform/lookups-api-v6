@@ -13,6 +13,7 @@ WORKDIR /app
 COPY . .
 RUN npm install --global pnpm@${PNPM_VERSION}
 RUN pnpm install --frozen-lockfile
+RUN pnpm run test:dependency-compat
 RUN pnpm exec prisma generate
 RUN pnpm run lint
 RUN pnpm run build

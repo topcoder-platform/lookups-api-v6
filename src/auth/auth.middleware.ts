@@ -13,9 +13,7 @@ export class AuthMiddleware implements NestMiddleware {
   private jwtAuthenticator;
 
   constructor(private configService: ConfigService) {
-    const authSecret = this.configService.get<string>(
-      'AUTH_SECRET',
-    );
+    const authSecret = this.configService.get<string>('AUTH_SECRET');
     let issuersValue = this.configService.get<string>(
       'VALID_ISSUERS',
       '["https://api.topcoder.com","https://topcoder-dev.auth0.com/"]',
