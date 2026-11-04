@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 2,
+  "environment": "prod",
+  "accountId": "409275337247",
+  "region": "us-east-1",
+  "deployRoleArn": "arn:aws:iam::409275337247:role/lookups-api-v6-prod-deploy",
+  "taskRoleArn": "arn:aws:iam::409275337247:role/lookups-dynamodb-access-role",
+  "executionRoleArn": "arn:aws:iam::409275337247:role/ecsTaskExecutionRole",
+  "cluster": "lookups-serverless",
+  "service": "lookups-api-v6",
+  "taskFamily": "lookups-api-v6",
+  "circleciOrgId": "947bef5e-1669-415d-b83c-4fc85155b7df",
+  "circleciProjectId": "34ed086b-9b91-4ab3-aa83-b95aff8e2075",
+  "repository": "github.com/topcoder-platform/lookups-api-v6",
+  "branch": "master",
+  "images": {
+    "lookups-api-v6": "lookups-api-v6"
+  }
+}
