@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe, HttpStatus } from '@nestjs/common';
 import * as request from 'supertest';
 import { HttpAdapterHost } from '@nestjs/core';
-import { CreateCountryDto } from 'src/modules/countries/dto/create-country.dto';
-import { UpdateCountryDto } from 'src/modules/countries/dto/update-country.dto';
+import { CreateCountryDto } from '../src/modules/countries/dto/create-country.dto';
+import { UpdateCountryDto } from '../src/modules/countries/dto/update-country.dto';
 
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -77,7 +77,7 @@ describe('CountriesController (e2e)', () => {
       });
   });
 
-  it('/v6/lookups/countries (HEAD)', async () => {
+  it('/v6/lookups/countries (HEAD)', () => {
     return request(app.getHttpServer())
       .head('/v6/lookups/countries')
       .expect(HttpStatus.OK);
