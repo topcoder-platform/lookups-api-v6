@@ -1,9 +1,10 @@
+import { createPostgresAdapter } from '../src/prisma-adapter';
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter: createPostgresAdapter(process.env.DATABASE_URL) });
 
 /**
  * Cleans and transforms the raw data from the JSON files.

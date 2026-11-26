@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe, HttpStatus } from '@nestjs/common';
 import * as request from 'supertest';
 import { HttpAdapterHost } from '@nestjs/core';
-import { CreateEducationalInstitutionDto } from 'src/modules/educational-institutions/dto/create-educational-institution.dto';
-import { UpdateEducationalInstitutionDto } from 'src/modules/educational-institutions/dto/update-educational-institution.dto';
+import { CreateEducationalInstitutionDto } from '../src/modules/educational-institutions/dto/create-educational-institution.dto';
+import { UpdateEducationalInstitutionDto } from '../src/modules/educational-institutions/dto/update-educational-institution.dto';
 
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';

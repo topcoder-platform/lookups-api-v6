@@ -14,7 +14,7 @@ The new architecture eliminates the complexity of the dual-datastore system, sim
 
 ## Prerequisites
 
-- Node.js 26.5.1 (see `.nvmrc`)
+- Node.js 26.13.1 (see `.nvmrc`)
 - pnpm 11.15.1
 - Docker and Docker Compose
 
